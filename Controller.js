@@ -298,18 +298,13 @@ Controller.prototype.handleTrackChange = function (index, isSelected)
     if (!isSelected)
         return;
 
-    if (this.surface.isActiveMode (MODE_MASTER))
-        this.surface.setPendingMode (MODE_TRACK);
-        
     // Recall last used view (if we are not in session mode)
     if (!this.surface.isActiveView (VIEW_SESSION))
-    {
-        var tb = this.model.getCurrentTrackBank ();
-        var viewID = tb.getPreferredView (index);
-        if (viewID == null)
-            viewID = tb.getTrack (index).canHoldNotes ? VIEW_PLAY : VIEW_CLIP;
-        this.surface.setActiveView (viewID);
-    }
+        this.surface.getView (VIEW_PLAY).setViewToPreferredOfActiveTrack ();
+
+    if (this.surface.isActiveMode (MODE_MASTER))
+        this.surface.setPendingMode (MODE_TRACK);
+
     if (this.surface.isActiveView (VIEW_PLAY))
         this.surface.getActiveView ().updateNoteMapping ();
      

@@ -1056,16 +1056,7 @@ AbstractView.prototype.onNote = function (event)
         
     if (this.surface.isActiveView (VIEW_SESSION))
     {
-        var tb = this.model.getCurrentTrackBank ();
-        var sel = tb.getSelectedTrack ();
-        var viewID = VIEW_PLAY;
-        if (sel != null)
-        {
-            viewID = tb.getPreferredView (sel.index);
-            if (viewID == null)
-                viewID = VIEW_PLAY;
-        }
-        this.surface.setActiveView (viewID);
+        this.setViewToPreferredOfActiveTrack ();
         return;
     }
     
@@ -1366,4 +1357,23 @@ AbstractView.prototype.setShowDevices = function (enable)
     this.showDevices = enable;
     for (var i = 0; i < DEVICE_MODES.length; i++)
         this.surface.getMode (DEVICE_MODES[i]).setShowDevices (enable);
+};
+
+AbstractView.prototype.setViewToPreferredOfActiveTrack = function ()
+{
+    var tb = this.model.getCurrentTrackBank ();
+    var sel = tb.getSelectedTrack ();
+    var viewID = VIEW_PLAY;
+    if (sel != null)
+    {
+        viewID = tb.getPreferredView (sel.index);
+        if (viewID == null)
+        {
+            // TODO Bugfix required - with child track bank ALL track data is sent which delays the canHoldNotes, therefore sometimes the clip view is chosen 
+            viewID = tb.getTrack (sel.index).canHoldNotes ? VIEW_PLAY : VIEW_CLIP;
+        }
+    }
+    
+    if (!this.surface.isActiveView (viewID))
+        this.surface.setActiveView (viewID);
 };
