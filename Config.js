@@ -1,3 +1,5 @@
+load ("framework/core/AbstractConfig.js");
+
 // ------------------------------
 // Static configurations
 // ------------------------------
@@ -23,31 +25,21 @@ Config.isMuteSoloLocked   = false;
 // Editable configurations
 // ------------------------------
 
-Config.ACTIVATE_FIXED_ACCENT           = 0;
-Config.FIXED_ACCENT_VALUE              = 1;
-Config.RIBBON_MODE                     = 2;
-Config.RIBBON_MODE_CC_VAL              = 3;
-Config.SCALES_SCALE                    = 4;
-Config.SCALES_BASE                     = 5;
-Config.SCALES_IN_KEY                   = 6;
-Config.SCALES_LAYOUT                   = 7;
-Config.ENABLE_VU_METERS                = 8;
-Config.VELOCITY_CURVE                  = 9;
-Config.PAD_THRESHOLD                   = 10;
-Config.BEHAVIOUR_ON_STOP               = 11;
-Config.DISPLAY_CROSSFADER              = 12;
-Config.CONVERT_AFTERTOUCH              = 13;
-Config.DEFAULT_DEVICE_MODE             = 14;
-Config.FOOTSWITCH_2                    = 15;
-Config.SEND_PORT                       = 16;
-Config.FLIP_SESSION                    = 17;
-Config.DISPLAY_BRIGHTNESS              = 18;
-Config.LED_BRIGHTNESS                  = 19;
-Config.PAD_SENSITIVITY                 = 20;
-Config.PAD_GAIN                        = 21;
-Config.PAD_DYNAMICS                    = 22;
-Config.AUTO_SELECT_DRUM                = 23;
-Config.SELECT_CLIP_ON_LAUNCH           = 24;
+Config.ACTIVATE_FIXED_ACCENT           = 10;
+Config.FIXED_ACCENT_VALUE              = 11;
+Config.RIBBON_MODE                     = 12;
+Config.RIBBON_MODE_CC_VAL              = 13;
+Config.VELOCITY_CURVE                  = 14;
+Config.PAD_THRESHOLD                   = 15;
+Config.DEFAULT_DEVICE_MODE             = 16;
+Config.FOOTSWITCH_2                    = 17;
+Config.SEND_PORT                       = 18;
+Config.DISPLAY_BRIGHTNESS              = 19;
+Config.LED_BRIGHTNESS                  = 20;
+Config.PAD_SENSITIVITY                 = 21;
+Config.PAD_GAIN                        = 22;
+Config.PAD_DYNAMICS                    = 23;
+Config.AUTO_SELECT_DRUM                = 24;
 Config.STOP_AUTOMATION_ON_KNOB_RELEASE = 25;
 
 Config.RIBBON_MODE_PITCH = 0;
@@ -65,10 +57,6 @@ Config.FOOTSWITCH_2_TAP_TEMPO           = 5;
 Config.FOOTSWITCH_2_NEW_BUTTON          = 6;
 Config.FOOTSWITCH_2_CLIP_BASED_LOOPER   = 7;
 
-Config.BEHAVIOUR_ON_STOP_MOVE_PLAY_CURSOR = 0;
-Config.BEHAVIOUR_ON_STOP_RETURN_TO_ZERO   = 1;
-Config.BEHAVIOUR_ON_STOP_PAUSE            = 2;
-
 Config.AUTO_SELECT_DRUM_OFF      = 0;
 Config.AUTO_SELECT_DRUM_CHANNEL  = 1;
 
@@ -76,20 +64,10 @@ Config.accentActive                = false;                       // Accent butt
 Config.fixedAccentValue            = 127;                         // Fixed velocity value for accent
 Config.ribbonMode                  = Config.RIBBON_MODE_PITCH;    // What does the ribbon send?
 Config.ribbonModeCCVal             = 1;
-Config.scale                       = 'Major';
-Config.scaleBase                   = 'C';
-Config.scaleInKey                  = true;
-Config.scaleLayout                 = '4th ^';
-Config.enableVUMeters              = false;
-Config.behaviourOnStop             = Config.BEHAVIOUR_ON_STOP_MOVE_PLAY_CURSOR;
-Config.displayCrossfader           = true;
-Config.convertAftertouch           = 0;
 Config.defaultDeviceMode           = 20; /*MODE_DEVICE_PARAMS;*/
 Config.footswitch2                 = Config.FOOTSWITCH_2_NEW_BUTTON;
 Config.sendPort                    = 7000;
-Config.flipSession                 = false;
 Config.autoSelectDrum              = Config.AUTO_SELECT_DRUM_OFF;
-Config.selectClipOnLaunch          = true;
 Config.stopAutomationOnKnobRelease = false;
 
 //Push 1
@@ -104,11 +82,9 @@ Config.padSensitivity    = 5;
 Config.padGain           = 5;
 Config.padDynamics       = 5;
 
-Config.AFTERTOUCH_CONVERSION_VALUES = [ "Off", "Poly Aftertouch", "Channel Aftertouch" ];
-for (var i = 0; i < 128; i++)
-    Config.AFTERTOUCH_CONVERSION_VALUES.push ("CC " + i);
-
 Config.DEFAULT_DEVICE_MODE_VALUES = [];
+
+Config.initListeners (Config.STOP_AUTOMATION_ON_KNOB_RELEASE);
 
 
 Config.init = function ()
@@ -186,71 +162,17 @@ Config.init = function ()
     ///////////////////////////
     // Scale
 
-    var scaleNames = Scales.getNames ();
-    Config.scaleSetting = prefs.getEnumSetting ("Scale", "Scales", scaleNames, scaleNames[0]);
-    Config.scaleSetting.addValueObserver (function (value)
-    {
-        Config.scale = value;
-        Config.notifyListeners (Config.SCALES_SCALE);
-    });
-    
-    Config.scaleBaseSetting = prefs.getEnumSetting ("Base", "Scales", Scales.BASES, Scales.BASES[0]);
-    Config.scaleBaseSetting.addValueObserver (function (value)
-    {
-        Config.scaleBase = value;
-        Config.notifyListeners (Config.SCALES_BASE);
-    });
-
-    Config.scaleInScaleSetting = prefs.getEnumSetting ("In Key", "Scales", [ "In Key", "Chromatic" ], "In Key");
-    Config.scaleInScaleSetting.addValueObserver (function (value)
-    {
-        Config.scaleInKey = value == "In Key";
-        Config.notifyListeners (Config.SCALES_IN_KEY);
-    });
-
-    Config.scaleLayoutSetting = prefs.getEnumSetting ("Layout", "Scales", Scales.LAYOUT_NAMES, Scales.LAYOUT_NAMES[0]);
-    Config.scaleLayoutSetting.addValueObserver (function (value)
-    {
-        Config.scaleLayout = value;
-        Config.notifyListeners (Config.SCALES_LAYOUT);
-    });
+    Config.activateScaleSetting (prefs);
+    Config.activateScaleBaseSetting (prefs);
+    Config.activateScaleInScaleSetting (prefs);
+    Config.activateScaleLayoutSetting (prefs);
 
     ///////////////////////////
     // Workflow
 
-    Config.enableVUMetersSetting = prefs.getEnumSetting ("VU Meters", "Workflow", [ "Off", "On" ], "Off");
-    Config.enableVUMetersSetting.addValueObserver (function (value)
-    {
-        Config.enableVUMeters = value == "On";
-        Config.notifyListeners (Config.ENABLE_VU_METERS);
-    });
-    
-    Config.behaviourOnStopSetting = prefs.getEnumSetting ("Behaviour on Stop", "Workflow", [ "Move play cursor", "Return to Zero", "Pause" ], "Move play cursor");
-    Config.behaviourOnStopSetting.addValueObserver (function (value)
-    {
-        switch (value)
-        {
-            case "Move play cursor":
-                Config.behaviourOnStop = Config.BEHAVIOUR_ON_STOP_MOVE_PLAY_CURSOR;
-                break;
-                
-            case "Return to Zero":
-                Config.behaviourOnStop = Config.BEHAVIOUR_ON_STOP_RETURN_TO_ZERO;
-                break;
-                
-            case "Pause":
-                Config.behaviourOnStop = Config.BEHAVIOUR_ON_STOP_PAUSE;
-                break;
-        }
-        Config.notifyListeners (Config.BEHAVIOUR_ON_STOP);
-    });
-    
-    Config.displayCrossfaderSetting = prefs.getEnumSetting ("Display Crossfader on Track", "Workflow", [ "Off", "On" ], "On");
-    Config.displayCrossfaderSetting.addValueObserver (function (value)
-    {
-        Config.displayCrossfader = value == "On";
-        Config.notifyListeners (Config.DISPLAY_CROSSFADER);
-    });
+    Config.activateEnableVUMetersSetting (prefs);    
+    Config.activateBehaviourOnStopSetting (prefs);
+    Config.activateDisplayCrossfaderSetting (prefs);
 
     Config.DEFAULT_DEVICE_MODE_VALUES[MODE_DEVICE_PARAMS]   = "Device - Parameters";
     Config.DEFAULT_DEVICE_MODE_VALUES[MODE_DEVICE_COMMON]   = "Fixed - Common";
@@ -294,12 +216,7 @@ Config.init = function ()
         Config.notifyListeners (Config.RIBBON_MODE);
     });
     
-    Config.flipSessionSetting = prefs.getEnumSetting ("Flip Session", "Workflow", [ "Off", "On" ], "Off");
-    Config.flipSessionSetting.addValueObserver (function (value)
-    {
-        Config.flipSession = value == "On";
-        Config.notifyListeners (Config.FLIP_SESSION);
-    });
+    Config.activateFlipSessionSetting (prefs);
     
     Config.autoSelectDrumSetting = prefs.getEnumSetting ("Auto-select drum settings", "Workflow", [ "Off", "Channel" ], "Off");
     Config.autoSelectDrumSetting.addValueObserver (function (value)
@@ -312,12 +229,7 @@ Config.init = function ()
         Config.notifyListeners (Config.AUTO_SELECT_DRUM);
     });
     
-    Config.selectClipOnLaunchSetting = prefs.getEnumSetting ("Select clip on launch", "Workflow", [ "Off", "On" ], "On");
-    Config.selectClipOnLaunchSetting.addValueObserver (function (value)
-    {
-        Config.selectClipOnLaunch = value == "On";
-        Config.notifyListeners (Config.SELECT_CLIP_ON_LAUNCH);
-    });
+    Config.activateSelectClipOnLaunchSetting (prefs);
     
     Config.stopAutomationOnKnobReleaseSetting = prefs.getEnumSetting ("Stop automation recording on knob release", "Workflow", [ "Off", "On" ], "Off");
     Config.stopAutomationOnKnobReleaseSetting.addValueObserver (function (value)
@@ -384,20 +296,7 @@ Config.init = function ()
         });
     }
     
-    Config.convertAftertouchSetting = prefs.getEnumSetting ("Convert Poly Aftertouch to", "Pads", Config.AFTERTOUCH_CONVERSION_VALUES, Config.AFTERTOUCH_CONVERSION_VALUES[1]);
-    Config.convertAftertouchSetting.addValueObserver (function (value)
-    {
-        
-        for (var i = 0; i < Config.AFTERTOUCH_CONVERSION_VALUES.length; i++)
-        {
-            if (Config.AFTERTOUCH_CONVERSION_VALUES[i] == value)
-            {
-                Config.convertAftertouch = i - 3;
-                break;
-            }
-        }
-        Config.notifyListeners (Config.CONVERT_AFTERTOUCH);
-    });
+    Config.activateConvertAftertouchSetting (prefs);
 };
 
 Config.setAccentEnabled = function (enabled)
@@ -427,44 +326,9 @@ Config.setRibbonModeCC = function (value)
     Config.ribbonModeCCSetting.setRaw (value);
 };
 
-Config.setScale = function (scale)
-{
-    Config.scaleSetting.set (scale);
-};
-
-Config.setScaleBase = function (scaleBase)
-{
-    Config.scaleBaseSetting.set (scaleBase);
-};
-
-Config.setScaleInScale = function (inScale)
-{
-    Config.scaleInScaleSetting.set (inScale ? "In Key" : "Chromatic");
-};
-
-Config.setScaleLayout = function (scaleLayout)
-{
-    Config.scaleLayoutSetting.set (scaleLayout);
-};
-
-Config.setVUMetersEnabled = function (enabled)
-{
-    Config.enableVUMetersSetting.set (enabled ? "On" : "Off");
-};
-
-Config.setDisplayCrossfader = function (enabled)
-{
-    Config.displayCrossfaderSetting.set (enabled ? "On" : "Off");
-};
-
 Config.setDefaultDeviceMode = function (mode)
 {
     Config.defaultDeviceModeSetting.set (Config.DEFAULT_DEVICE_MODE_VALUES[mode]);
-};
-
-Config.setFlipSession = function (enabled)
-{
-    Config.flipSessionSetting.set (enabled ? "On" : "Off");
 };
 
 Config.changePadThreshold = function (control)
@@ -501,31 +365,15 @@ Config.changePadGain = function (control)
     Config.padGainSetting.setRaw (changeIntValue (control, Config.padGain, 1, 11));
 };
 
-Config.changePadDynamics  = function (control)
+Config.changePadDynamics = function (control)
 {
     Config.padDynamicsSetting.setRaw (changeIntValue (control, Config.padDynamics, 1, 11));
 };
 
 
-// ------------------------------
-// Property listeners
-// ------------------------------
-
-Config.listeners = [];
-for (var i = 0; i <= Config.STOP_AUTOMATION_ON_KNOB_RELEASE; i++)
-    Config.listeners[i] = [];
-
-Config.addPropertyListener = function (property, listener)
-{
-    Config.listeners[property].push (listener);
-};
-
-Config.notifyListeners = function (property)
-{
-    var ls = Config.listeners[property];
-    for (var i = 0; i < ls.length; i++)
-        ls[i].call (null);
-};
+//------------------------------
+// Value conversions
+//------------------------------
 
 Config.toMidiValue = function (value)
 {

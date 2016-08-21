@@ -2,11 +2,9 @@
 // (c) 2014-2016
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
-function Config () {}
-Config.isPush2 = true;
-
 loadAPI (1);
 load ("Config.js");
+Config.isPush2 = true;
 load ("framework/ClassLoader.js");
 load ("push/ClassLoader.js");
 load ("view/ClassLoader.js");

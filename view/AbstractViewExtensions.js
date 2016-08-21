@@ -132,37 +132,8 @@ AbstractView.prototype.onPlay = function (event)
         transport.togglePunchIn ();
         return;
     }
-    
-    if (this.restartFlag)
-    {
-        transport.stopAndRewind ();
-        this.restartFlag = false;
-    }
-    else
-    {
-        switch (Config.behaviourOnStop)
-        {
-            case Config.BEHAVIOUR_ON_STOP_RETURN_TO_ZERO:
-                if (transport.isPlaying)
-                    transport.stopAndRewind ();
-                else
-                    transport.play ();
-                break;
-            
-            case Config.BEHAVIOUR_ON_STOP_MOVE_PLAY_CURSOR:
-                transport.play ();
-                this.doubleClickTest ();
-                break;
-                
-            case Config.BEHAVIOUR_ON_STOP_PAUSE:
-                if (transport.isPlaying)
-                    transport.stop ();
-                else
-                    transport.play ();
-                this.doubleClickTest ();
-                break;
-        }
-    }
+
+    this.handlePlayOptions ();
 };
 
 AbstractView.prototype.onRecord = function (event)
