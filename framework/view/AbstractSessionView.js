@@ -55,6 +55,9 @@ AbstractSessionView.prototype.updateArrowStates = function ()
         AbstractView.prototype.updateArrowStates.call (this);
         this.canScrollUp = tb.canScrollScenesUp ();
         this.canScrollDown = tb.canScrollScenesDown ();
+        
+        // Flipped scene buttons are not updated unless we redraw them here
+        this.drawSceneButtons ();
     }
 };
 
